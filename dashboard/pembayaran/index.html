@@ -1,0 +1,712 @@
+<!DOCTYPE html> <html lang="id"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width,initial-scale=1"> <meta name="robots" content="noindex, nofollow"> <title>Pembayaran - Uang Masuk</title> <link rel="stylesheet" href="../../assets/css/style.css"> <link rel="icon" type="image/svg+xml" href="../../assets/images/logo.svg"> <link rel="apple-touch-icon" href="../../assets/images/logo.svg"> <style> .main-content {
+      display: flex;
+      flex-direction: column;
+      background: #f8f9fa;
+    }
+
+    .payment-container {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 450px;
+      background: var(--surface);
+      height: calc(100vh - var(--topbar-h) - var(--bottom-nav-h));
+      overflow: hidden;
+    }
+
+    .floating-cart-bar.show {
+      display: flex;
+    }
+
+    /* Payment Method Selector */
+    .method-selector {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+      padding: 0 24px;
+    }
+    .method-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 12px;
+      background: var(--surface);
+      border: 2px solid var(--c-dark);
+      border-radius: 0;
+      cursor: pointer;
+      transition: all 0.15s;
+      box-shadow: 3px 3px 0px var(--c-dark);
+    }
+    .method-btn.active {
+      background: var(--primary);
+      transform: translate(2px, 2px);
+      box-shadow: 0px 0px 0px var(--c-dark);
+    }
+    .method-btn svg {
+      width: 20px;
+      height: 20px;
+      stroke-width: 2.5;
+    }
+    .method-label {
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* QRIS Display */
+    .qris-container {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      padding: 20px;
+      background: #fff;
+      border: 2px solid var(--c-dark);
+      margin: 0 24px 20px;
+      box-shadow: 4px 4px 0px var(--c-dark);
+    }
+    .qris-img-wrap {
+      width: 100%;
+      max-width: 220px;
+      aspect-ratio: 1;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f8fafc;
+    }
+    .qris-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .qris-hint {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      text-align: center;
+      font-weight: 600;
+    }
+
+    /* Lightbox / Zoom QRIS */
+    .qris-lightbox {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(4px);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      padding: 30px;
+      cursor: zoom-out;
+      animation: fadeIn 0.15s ease-out;
+    }
+    .qris-lightbox.active { display: flex; }
+    .qris-lightbox-content {
+      max-width: 100%;
+      max-height: 90vh;
+      background: white;
+      border: 4px solid var(--c-dark);
+      box-shadow: 12px 12px 0px var(--c-dark);
+      position: relative;
+      cursor: default;
+    }
+    .qris-lightbox-img {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-height: 85vh;
+      object-fit: contain;
+    }
+    .qris-lightbox-close {
+      position: absolute;
+      top: -15px; right: -15px;
+      width: 40px; height: 40px;
+      background: var(--danger);
+      border: 3px solid var(--c-dark);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 4px 4px 0px var(--c-dark);
+      transition: all 0.1s;
+    }
+    .qris-lightbox-close:hover {
+      transform: translate(2px, 2px);
+      box-shadow: 0px 0px 0px var(--c-dark);
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .payment-cart-section {
+      display: flex;
+      flex-direction: column;
+      border-right: 2px solid var(--c-dark);
+      background: var(--bg);
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    @media (max-width: 960px) {
+      .payment-container {
+        grid-template-columns: 1fr;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .payment-cart-section {
+        flex: 1;
+        border-right: none;
+        min-height: 0;
+      }
+    }
+
+    @media (max-width: 768px) {
+      body.mobile-keyboard-open .payment-container {
+        height: calc(var(--visual-vh, 100vh) - var(--topbar-h));
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+      }
+
+      body.payment-keyboard-open .bottom-nav {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        transform: translateY(120%) !important;
+      }
+
+      body.payment-keyboard-open .main-content {
+        padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+      }
+
+      body.mobile-keyboard-open .payment-panel {
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+      }
+    }
+
+    /* Cart Header */
+    .cart-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 2px solid var(--c-dark);
+      background: var(--surface);
+      z-index: 10;
+    }
+
+    .cart-header-title {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .cart-badge {
+      background: var(--primary);
+      color: var(--c-dark);
+      font-size: 0.75rem;
+      font-weight: 800;
+      padding: 2px 10px;
+      border: 1.5px solid var(--c-dark);
+      border-radius: 0;
+      text-align: center;
+    }
+
+    /* Cart Items */
+    .cart-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 0;
+      min-height: 0;
+    }
+
+    .cart-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      gap: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .cart-empty svg {
+      opacity: 0.3;
+    }
+
+    .cart-item-row {
+      display: flex;
+      align-items: center;
+      padding: 12px 24px;
+      border-bottom: 2px solid var(--c-dark);
+      background: var(--surface);
+      gap: 16px;
+      min-height: 72px;
+    }
+
+    .cart-item-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .cart-item-name {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .cart-item-meta {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .cart-item-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .cart-item-subtotal {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--text);
+      width: 100px;
+      text-align: right;
+    }
+
+    /* Qty Controls */
+    .qty-controls {
+      display: flex;
+      align-items: center;
+      border: 2px solid var(--c-dark);
+      border-radius: 0;
+      overflow: hidden;
+      height: 36px;
+    }
+
+    .qty-btn-pill {
+      width: 32px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f8f9fa;
+      border: none;
+      cursor: pointer;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      transition: all 0.15s;
+    }
+
+    .qty-btn-pill:hover {
+      background: var(--c-dark);
+      color: var(--c-white);
+    }
+
+    .qty-display {
+      padding: 0 10px;
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: var(--text);
+      min-width: 32px;
+      text-align: center;
+      border-left: 2px solid var(--c-dark);
+      border-right: 2px solid var(--c-dark);
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cart-item-del {
+      width: 34px;
+      height: 34px;
+      border-radius: 0;
+      background: var(--surface);
+      border: 2px solid var(--c-dark);
+      cursor: pointer;
+      color: var(--danger);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.1s;
+      box-shadow: 2px 2px 0px var(--c-dark);
+    }
+
+    .cart-item-del:hover {
+      background: var(--danger);
+      color: white;
+      transform: translate(1px, 1px);
+      box-shadow: 0px 0px 0px var(--c-dark);
+    }
+
+    /* ---- Mobile Specific Adjustments ---- */
+    @media (max-width: 600px) {
+      .cart-item-row {
+        padding: 12px 14px;
+        gap: 8px;
+        min-height: 64px;
+      }
+      
+      .cart-item-name {
+        font-size: 0.88rem;
+      }
+      
+      .cart-item-meta {
+        font-size: 0.68rem;
+      }
+
+      .meta-pcs {
+        display: none; /* Hide '/ pcs' to save space */
+      }
+
+      .cart-item-actions {
+        gap: 8px;
+      }
+
+      .qty-controls {
+        height: 32px;
+      }
+
+      .qty-btn-pill {
+        width: 28px;
+        height: 32px;
+        font-size: 1rem;
+      }
+
+      .qty-display {
+        padding: 0 6px;
+        min-width: 26px;
+        height: 32px;
+        font-size: 0.8rem;
+      }
+
+      .cart-item-subtotal {
+        font-size: 0.88rem;
+        width: auto;
+        min-width: 70px;
+      }
+
+      .cart-item-del {
+        width: 30px;
+        height: 30px;
+      }
+      .cart-item-del svg {
+        width: 14px;
+        height: 14px;
+      }
+    }
+
+    /* Payment Panel */
+    .payment-panel {
+      display: flex;
+      flex-direction: column;
+      background: var(--surface);
+      overflow-y: auto;
+      min-height: 0;
+    }
+
+    @media (max-width: 960px) {
+      .payment-panel {
+        border-top: 2px solid var(--border);
+        flex-shrink: 0;
+        max-height: none;
+        overflow-y: visible;
+      }
+    }
+
+    .payment-rows {
+      padding: 24px 24px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .pay-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.95rem;
+    }
+
+    .pay-row label {
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .pay-row .pay-val {
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .pay-row.discount label {
+      color: var(--danger);
+    }
+
+    .discount-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      border: 2px solid var(--c-dark);
+      border-radius: 0;
+      overflow: hidden;
+      height: 36px;
+    }
+
+    .discount-mode-static {
+      width: 40px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--primary);
+      color: var(--c-dark);
+      border-right: 2px solid var(--c-dark);
+      font-size: 0.9rem;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    #discountInput {
+      flex: 1;
+      width: 60px;
+      text-align: right;
+      padding: 0 12px;
+      border: none;
+      font-size: 0.95rem;
+      font-family: inherit;
+      font-weight: 700;
+      color: var(--text);
+      outline: none;
+      height: 36px;
+    }
+
+    #discountInput:focus {
+      background: #fff;
+    }
+
+    .pay-total-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 24px;
+      background: var(--primary-light);
+      border-top: 2px solid var(--c-dark);
+      border-bottom: 2px solid var(--c-dark);
+    }
+
+    .pay-total-label {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--c-dark);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .pay-total-amount {
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: var(--c-dark);
+    }
+
+    .payment-cash-area {
+      padding: 20px 24px 0;
+    }
+
+    .cash-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .cash-input-wrap {
+      position: relative;
+    }
+
+    .cash-input-prefix {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--text-secondary);
+    }
+
+    #cashInput {
+      width: 100%;
+      padding: 14px 14px 14px 44px;
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--text);
+      border: 2px solid var(--c-dark);
+      border-radius: 0;
+      transition: 0.1s;
+      background: var(--surface);
+    }
+
+    #cashInput:focus {
+      border-color: var(--c-dark);
+      box-shadow: 4px 4px 0px var(--c-dark);
+      outline: none;
+    }
+
+    .quick-amounts-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .qa-btn {
+      padding: 12px 6px;
+      background: var(--surface);
+      border: 2px solid var(--c-dark);
+      border-radius: 0;
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: var(--c-dark);
+      cursor: pointer;
+      transition: 0.1s;
+      text-align: center;
+      box-shadow: 2px 2px 0px var(--c-dark);
+    }
+
+    .qa-btn:hover {
+      background: var(--primary);
+      transform: translate(1px, 1px);
+      box-shadow: 0px 0px 0px var(--c-dark);
+    }
+
+    .change-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px 8px;
+    }
+
+    .change-label {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .change-amount {
+      font-size: 1.25rem;
+      font-weight: 900;
+      color: var(--c-dark);
+    }
+
+    .change-amount.insuf {
+      color: var(--danger);
+    }
+
+    .pay-btn-area {
+      padding: 16px 24px 24px;
+      margin-top: auto;
+    }
+
+    .pay-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 16px;
+      background: var(--primary);
+      color: var(--c-dark);
+      font-size: 1.1rem;
+      font-weight: 900;
+      border: 2px solid var(--c-dark);
+      border-radius: 0;
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.1s;
+      letter-spacing: 0.05em;
+      box-shadow: 4px 4px 0px var(--c-dark);
+      text-transform: uppercase;
+    }
+
+    .pay-btn:hover {
+      transform: translate(2px, 2px);
+      box-shadow: 0px 0px 0px var(--c-dark);
+    }
+
+    .pay-btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: 0px 0px 0px var(--c-dark);
+    }
+
+    .pay-btn:disabled {
+      background: #e5e7eb;
+      color: #9ca3af;
+      border-color: #9ca3af;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+      pointer-events: none;
+    }
+
+    /* ---- Cart Item Skeleton ---- */
+    .cart-item-skeleton {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 16px 24px;
+      border-bottom: 2px solid var(--c-dark);
+      background: var(--surface);
+      margin-bottom: 0;
+      animation: cis-fadein 0.25s ease both;
+    }
+
+    @keyframes cis-fadein {
+      from { opacity: 0; transform: translateY(3px); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    .cart-item-skeleton:nth-child(1) { animation-delay: 0.00s; }
+    .cart-item-skeleton:nth-child(2) { animation-delay: 0.06s; }
+    .cart-item-skeleton:nth-child(3) { animation-delay: 0.12s; }
+    .cart-item-skeleton:nth-child(4) { animation-delay: 0.18s; }
+    .cart-item-skeleton:nth-child(5) { animation-delay: 0.24s; }
+
+    .cis-left { display: flex; flex-direction: column; gap: 6px; }
+    .cis-right { display: flex; align-items: center; gap: 12px; }
+
+    .cis-name { height: 14px; border-radius: 0; }
+    .cis-meta { height: 10px; border-radius: 0; }
+
+    .cis-qty-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      border: 2px solid var(--c-dark);
+      border-radius: 0;
+      overflow: hidden;
+    }
+    .cis-qty-btn { width: 32px; height: 32px; border-radius: 0; }
+    .cis-qty-val { width: 36px; height: 32px; border-radius: 0; }
+    .cis-subtotal { height: 14px; border-radius: 0; min-width: 72px; }
+    .cis-del { width: 32px; height: 32px; border-radius: 0; border: 2px solid var(--c-dark); } </style> <link rel="manifest" href="../../manifest.json"> <meta name="theme-color" content="#303841"> <meta name="apple-mobile-web-app-capable" content="yes"> </head> <body> <div class="app-wrapper"> <aside class="sidebar" id="sidebar"> <div class="sidebar-brand"> <div class="app-name">Uang Masuk</div> <div class="business-name" id="sidebarBusinessName">Usaha Saya</div> </div> <nav class="sidebar-nav"> <div class="nav-section-label">Menu Utama</div> <a href="../"> <span class="nav-icon"><svg viewBox="0 0 24 24"> <path d="M2 10l10-8 10 8v12H2V10Z"></path><path d="M9 22V12h6v10"></path> </svg></span> Dashboard </a> <a href="../transaksi/" class="active"> <span class="nav-icon"><svg viewBox="0 0 24 24"> <path d="M1 1h4l3 15h13l3-10H6"></path><rect x="8" y="19" width="3" height="3"></rect><rect x="17" y="19" width="3" height="3"></rect> </svg></span> Transaksi </a> <a href="../produk/"> <span class="nav-icon"><svg viewBox="0 0 24 24"> <path d="M1 1h10l12 12-10 10L1 11V1Z"></path><rect x="6" y="6" width="3" height="3"></rect> </svg></span> Produk </a> <a href="../stok/"> <span class="nav-icon"><svg viewBox="0 0 24 24"> <path d="M12 2L2 7l10 5 10-5-10-5Z"></path><path d="M2 7v10l10 5v-10L2 7Z"></path><path d="M22 7v10l-10 5v-10l10-5Z"></path> </svg></span> Stok </a> <a href="../pengeluaran/"> <span class="nav-icon"><svg viewBox="0 0 24 24"> <rect x="1" y="4" width="22" height="16"></rect><line x1="1" y1="10" x2="23" y2="10"></line><rect x="16" y="14" width="3" height="2"></rect> </svg></span> Pengeluaran </a> <a href="../laporan/"> <span class="nav-icon"><svg viewBox="0 0 24 24"> <rect x="4" y="14" width="4" height="6"></rect><rect x="10" y="8" width="4" height="12"></rect><rect x="16" y="2" width="4" height="18"></rect> </svg></span> Laporan </a> <a href="../catatan/"> <span class="nav-icon"><svg viewBox="0 0 24 24"> <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path> <polyline points="14 2 14 8 20 8"></polyline> <line x1="16" y1="13" x2="8" y2="13"></line> <line x1="16" y1="17" x2="8" y2="17"></line> <polyline points="10 9 9 9 8 9"></polyline> </svg></span> Catatan </a> <div class="nav-section-label" style="margin-top:8px">Pengaturan</div> <a href="../pengaturan/"> <span class="nav-icon"><svg viewBox="0 0 24 24"> <line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><rect x="1" y="10" width="6" height="4"></rect><rect x="9" y="8" width="6" height="4"></rect><rect x="17" y="12" width="6" height="4"></rect> </svg></span> Pengaturan </a> </nav> </aside> <div class="main-content"> <header class="topbar"> <div style="display:flex; align-items:center; gap:12px;"> <button class="hamburger menu-toggle" id="hamburgerBtn" aria-label="Menu" style="display:none;"> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <line x1="3" y1="12" x2="21" y2="12"></line> <line x1="3" y1="6" x2="21" y2="6"></line> <line x1="3" y1="18" x2="21" y2="18"></line> </svg> </button> <button class="btn btn-ghost" onclick="window.location.href='../transaksi/'" style="padding: 6px 10px; display:flex; gap:6px; align-items:center;"> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20"> <path d="M19 12H5"/> <path d="M12 19l-7-7 7-7"/> </svg> <span style="font-weight: 700;">Kembali</span> </button> </div> <div class="topbar-right"></div> </header> <div class="payment-container"> <div class="payment-cart-section"> <div class="cart-header"> <div class="cart-header-title"> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20"> <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/> <line x1="3" y1="6" x2="21" y2="6"/> <path d="M16 10a4 4 0 0 1-8 0"/> </svg> Pesanan Anda <span class="cart-badge" id="cartCount">0</span> </div> <button class="btn btn-ghost btn-sm" onclick="clearCart()" style="font-size:0.8rem; font-weight:700; color:var(--danger)">Kosongkan</button> </div> <div class="cart-body" id="cartBody"> <div class="cart-empty" id="cartEmpty"> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="48" height="48"> <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/> <line x1="3" y1="6" x2="21" y2="6"/> <path d="M16 10a4 4 0 0 1-8 0"/> </svg> <span style="font-size: 1rem;">Keranjang Masih Kosong</span> <a href="../transaksi/" class="btn btn-primary" style="margin-top: 10px;">Pilih Produk</a> </div> <div id="cartItems"></div> </div> </div> <div class="payment-panel"> <div class="payment-rows"> <div class="pay-row"> <label>Subtotal Produk</label> <span class="pay-val" id="paySubtotal">Rp 0</span> </div> <div class="pay-row discount"> <label>Potongan / Diskon</label> <div class="discount-input-wrap" id="discountWrapper"> <div class="discount-mode-static">%</div> <input type="number" id="discountInput" min="0" max="100" value="0" placeholder="0" oninput="updatePayment()"> </div> </div> <div style="height: 4px;"></div> </div> <div class="pay-total-row"> <span class="pay-total-label">Total Bayar</span> <span class="pay-total-amount" id="payTotal">Rp 0</span> </div> <div class="cash-label" style="padding: 20px 24px 8px;">Metode Pembayaran</div> <div class="method-selector"> <button class="method-btn active" id="methodTunai" onclick="setPaymentMethod('Tunai')"> <span class="method-label">Tunai</span> </button> <button class="method-btn" id="methodQRIS" onclick="setPaymentMethod('QRIS')"> <span class="method-label">QRIS / Non-Tunai</span> </button> </div> <div class="qris-container" id="qrisContainer"> <div class="qris-img-wrap" style="width:200px; height:200px; margin:0 auto; border:2px solid var(--c-dark); position:relative; overflow:hidden;"> <img src="" id="displayQrisImg" alt="QRIS" style="display:none; width:100%; height:100%; object-fit:contain; cursor:zoom-in;" onclick="openQrisLightbox()"> <div id="qrisEmptyHint" style="display:none; padding:20px; text-align:center; font-size:0.8rem; color:var(--text-muted);"> QRIS belum diunggah di Pengaturan </div> </div> <div class="qris-hint">Silakan scan kode QR di atas untuk melakukan pembayaran</div> </div> <div class="payment-cash-area" id="cashArea"> <div class="cash-label">Nominal Uang Diterima</div> <div class="cash-input-wrap"> <span class="cash-input-prefix">Rp</span> <input type="number" id="cashInput" class="form-control" min="0" placeholder="0" oninput="updatePayment()" autofocus> </div> <div class="quick-amounts-grid"> <button class="qa-btn" onclick="setCash(10000)">10.000</button> <button class="qa-btn" onclick="setCash(50000)">50.000</button> <button class="qa-btn" onclick="setCash(100000)">100.000</button> <button class="qa-btn" id="btnUangPas" onclick="setCash(getTotal())">UANG PAS</button> </div> </div> <div class="change-row"> <span class="change-label">Kembalian</span> <span class="change-amount" id="payChange">Rp 0</span> </div> <div class="pay-btn-area"> <button class="pay-btn" onclick="bayar()" id="bayarBtn"> BAYAR SEKARANG </button> </div> </div> </div> </div> <nav class="bottom-nav"> <div class="bottom-nav-inner"> <a href="../" class="bottom-nav-item"> <span class="nav-icon-wrap"><svg viewBox="0 0 24 24"> <path d="M2 10l10-8 10 8v12H2V10Z"></path><path d="M9 22V12h6v10"></path> </svg></span> <span>Beranda</span> </a> <a href="../transaksi/" class="bottom-nav-item active"> <span class="nav-icon-wrap"><svg viewBox="0 0 24 24"> <path d="M1 1h4l3 15h13l3-10H6"></path><rect x="8" y="19" width="3" height="3"></rect><rect x="17" y="19" width="3" height="3"></rect> </svg></span> <span>Kasir</span> </a> <a href="../pengeluaran/" class="bottom-nav-item"> <span class="nav-icon-wrap"><svg viewBox="0 0 24 24"> <rect x="1" y="4" width="22" height="16"></rect><line x1="1" y1="10" x2="23" y2="10"></line><rect x="16" y="14" width="3" height="2"></rect> </svg></span> <span>Keluar</span> </a> <a href="../laporan/" class="bottom-nav-item"> <span class="nav-icon-wrap"><svg viewBox="0 0 24 24"> <rect x="4" y="14" width="4" height="6"></rect><rect x="10" y="8" width="4" height="12"></rect><rect x="16" y="2" width="4" height="18"></rect> </svg></span> <span>Laporan</span> </a> <a href="../pengaturan/" class="bottom-nav-item"> <span class="nav-icon-wrap"><svg viewBox="0 0 24 24"> <line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><rect x="1" y="10" width="6" height="4"></rect><rect x="9" y="8" width="6" height="4"></rect><rect x="17" y="12" width="6" height="4"></rect> </svg></span> <span>Lainnya</span> </a> </div> </nav> </div> <div class="modal-overlay" id="strukModal"> <div class="modal" style="max-width:360px;"> <div class="modal-header"> <div class="modal-title" style="display:flex;align-items:center;gap:8px;"> <svg viewBox="0 0 24 24" fill="none" stroke="var(--c-dark)" stroke-width="2.5" width="20" height="20"> <circle cx="12" cy="12" r="10"/> <path d="M9 12l2 2 4-4"/> </svg> Transaksi Berhasil! </div> <button class="modal-close" onclick="closeModal('strukModal')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"> <line x1="18" y1="6" x2="6" y2="18"/> <line x1="6" y1="6" x2="18" y2="18"/> </svg></button> </div> <div class="modal-body" style="padding-bottom: 5px;"> <div id="strukContent" style="font-family:'Courier New',monospace; font-size:13px; line-height:1.8;"></div> </div> <div class="modal-footer" style="display:flex; flex-direction:column; gap:12px; width:100%; padding-bottom: 24px; padding-top: 10px; border-top: 2px dashed #eee;"> <div style="width: 100%;"> <div style="font-size: 0.7rem; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 10px; text-align: center; letter-spacing: 0.12em; opacity: 0.8;"> Pilih Ukuran Kertas </div> <div style="display: flex; gap: 8px;"> <button class="btn btn-outline btn-sm size-btn active" id="btnSize58" onclick="setPrintSize('58')" style="flex: 1; justify-content: center; font-size: 0.8rem; border-width: 2px; height: 38px;"> 58 MM </button> <button class="btn btn-outline btn-sm size-btn" id="btnSize80" onclick="setPrintSize('80')" style="flex: 1; justify-content: center; font-size: 0.8rem; border-width: 2px; height: 38px;"> 80 MM </button> </div> </div> <div style="display: flex; gap: 8px; width: 100%;"> <button class="btn btn-outline" onclick="closeModal('strukModal')" style="flex:1; justify-content:center; font-weight:800; border-width:2.5px; height: 44px; font-size: 0.9rem;">Tanpa Struk</button> <button class="btn btn-primary" onclick="printStruk()" style="flex:1; display:flex; align-items:center; justify-content:center; gap:8px; font-weight:800; border-width:2.5px; background:var(--c-dark) !important; color:white !important; height: 44px; font-size: 0.9rem;"> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"> <polyline points="6 9 6 2 18 2 18 9"/> <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/> <rect x="6" y="14" width="12" height="8"/> </svg> Cetak Struk </button> </div> </div> </div> </div> <div class="qris-lightbox" id="qrisLightbox" onclick="closeQrisLightbox()"> <div class="qris-lightbox-content" onclick="event.stopPropagation()"> <button class="qris-lightbox-close" onclick="closeQrisLightbox()"> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="20" height="20"> <line x1="18" y1="6" x2="6" y2="18"></line> <line x1="6" y1="6" x2="18" y2="18"></line> </svg> </button> <img src="" id="lightboxImg" class="qris-lightbox-img" alt="Enlarged QRIS"> </div> </div> <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script> <script src="../../assets/js/supabase.js"></script> <script src="../../assets/js/subscription-guard.js"></script> <script src="../../assets/js/db-api.js"></script> <script src="../../assets/js/sync.js"></script> <script src="../../assets/js/utils.js"></script> <script src="../../assets/js/auth.js"></script> <script src="../../assets/js/free-plan-guard.js"></script> <script>function _0xa54f(){const _0x580051=['DMLZDwfSvMLLD3bV','ywrKrxzLBNrmAxn0','CgfYC2u','AhrIB3G','BwuIihn0EwXLpsj3','mte1mZeYmKnRqwTLuW','mJy2nZq4mhLUv2jXBq','pGOGicaGicaGicaG','BgvUz3rO','z2v0rwXLBwvUDej5','CMvTB3zL','Bgv0B24Gy2LZlw5H','BgTFy2fYDa','ywrLza','Bgv0B24IpGOGicaG','icaGicaGidXKAxyG','lNbHEw1LBNqTCgfU','yxnZpsjJAxmTCMLN','Cgf5BwvUDc1RzxLI','i2rPC2nVDw50sw5W','lwj0BIi+pc9KAxy+','icaGicaGica8zgL2','yM9KEq','ywrK','CY1KzwWIpJWVzgL2','mJGXmtGWnenLzurqtW','zM9JDxm','B3zLCMzSB3C','icaGicaGicaGidWV','ignSyxnZpsjZA2vS','zxrVBIbJAxmTCxr5','nLbZA1rHua','B2fYzc1VCgvU','BwfW','C3r5Bgu','y2XVC2vrCMLZtgLN','ofrwBKzhza','Axy+cIaGicaGicaG','pgrPDIbJBgfZCZ0I','ywn0AxzL','icaGica8zgL2ignS','CxjPC0XPz2H0yM94','oduWnta5mgT3uxr1zq','Dg9Nz2XL','nZeZndi2n1ncvMv1Da','CMvZAxPL','lw1LDgeIihn0EwXL','Dg9mB2nHBgvtDhjP','cIaGicaGicaGica8','jsi+pc9KAxy+cIaG','BgLNAhrIB3HjBwC','zNjVBq','y2fYDeL0zw1Z','C2TLBgv0B24Gy2LZ','iNnRzwXLDg9UignP','ywn0AxzLrwXLBwvU','nti3mJK5mKX2rgHXza','y2XHC3nmAxn0','CxvLCNLtzwXLy3rV','psj3Awr0AdO','zM9YrwfJAa','Cxr5lxzHBci+pc9K','ndm2ndC4AevhAuLx','z2v0sxrLBq','Aw5JBhvKzxm','AwqTsuq','zw5LCG'];_0xa54f=function(){return _0x580051;};return _0xa54f();}function _0x3e02(_0x2d54ed,_0x387ad8){_0x2d54ed=_0x2d54ed-0xe4;const _0xa54fa4=_0xa54f();let _0x3e02fd=_0xa54fa4[_0x2d54ed];if(_0x3e02['NyxuZK']===undefined){var _0x34043a=function(_0x3dc0c2){const _0x5335e1='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let _0x418862='',_0x249fed='';for(let _0x47bce1=0x0,_0x3c76df,_0x5bca66,_0x5f0433=0x0;_0x5bca66=_0x3dc0c2['charAt'](_0x5f0433++);~_0x5bca66&&(_0x3c76df=_0x47bce1%0x4?_0x3c76df*0x40+_0x5bca66:_0x5bca66,_0x47bce1++%0x4)?_0x418862+=String['fromCharCode'](0xff&_0x3c76df>>(-0x2*_0x47bce1&0x6)):0x0){_0x5bca66=_0x5335e1['indexOf'](_0x5bca66);}for(let _0x2990f3=0x0,_0x176d61=_0x418862['length'];_0x2990f3<_0x176d61;_0x2990f3++){_0x249fed+='%'+('00'+_0x418862['charCodeAt'](_0x2990f3)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(_0x249fed);};_0x3e02['SULcMr']=_0x34043a,_0x3e02['eMppYK']={},_0x3e02['NyxuZK']=!![];}const _0x1cad2b=_0xa54fa4[0x0],_0x2a5658=_0x2d54ed+_0x1cad2b,_0x5834e5=_0x3e02['eMppYK'][_0x2a5658];return!_0x5834e5?(_0x3e02fd=_0x3e02['SULcMr'](_0x3e02fd),_0x3e02['eMppYK'][_0x2a5658]=_0x3e02fd):_0x3e02fd=_0x5834e5,_0x3e02fd;}const _0x2c5198=_0x3e02;(function(_0x31c3eb,_0x4b5e8b){const _0x344aca=_0x3e02,_0x218cab=_0x31c3eb();while(!![]){try{const _0xd815d4=parseInt(_0x344aca(0xf6))/0x1+-parseInt(_0x344aca(0x100))/0x2+-parseInt(_0x344aca(0x114))/0x3+parseInt(_0x344aca(0x11f))/0x4*(parseInt(_0x344aca(0x101))/0x5)+-parseInt(_0x344aca(0x11a))/0x6*(parseInt(_0x344aca(0xe4))/0x7)+parseInt(_0x344aca(0xf0))/0x8+parseInt(_0x344aca(0x125))/0x9;if(_0xd815d4===_0x4b5e8b)break;else _0x218cab['push'](_0x218cab['shift']());}catch(_0x73af79){_0x218cab['push'](_0x218cab['shift']());}}}(_0xa54f,0x8c482),document[_0x2c5198(0xfc)+_0x2c5198(0xfa)]('DOMContentLo'+_0x2c5198(0x108),()=>{const _0x2e3a4b=_0x2c5198;window['openQrisLigh'+'tbox']=()=>{const _0x49629f=_0x3e02,_0x176d61=document['getElementBy'+'Id']('displayQrisI'+'mg')['src'];if(!_0x176d61)return;document[_0x49629f(0x104)+'Id'](_0x49629f(0xea))['src']=_0x176d61,document[_0x49629f(0x104)+'Id']('qrisLightbox')[_0x49629f(0xf1)][_0x49629f(0x112)](_0x49629f(0x122)),document[_0x49629f(0x111)][_0x49629f(0x11d)]['overflow']='hidden';},window[_0x2e3a4b(0x11e)+_0x2e3a4b(0xfe)]=()=>{const _0x525d75=_0x2e3a4b;document[_0x525d75(0x104)+'Id'](_0x525d75(0x124))[_0x525d75(0xf1)]['remove'](_0x525d75(0x122)),document['body'][_0x525d75(0x11d)][_0x525d75(0x116)]='';};const _0x418862=document['getElementBy'+'Id'](_0x2e3a4b(0xec)),_0x249fed=document[_0x2e3a4b(0x104)+'Id']('cartEmpty'),_0x47bce1=document['querySelecto'+'r'](_0x2e3a4b(0x10b)+'el'),_0x3c76df=document[_0x2e3a4b(0xf2)+'rAll'](_0x2e3a4b(0x10e)+'ut,\x20#cashInp'+'ut'),_0x5bca66=window[_0x2e3a4b(0xfb)+'rt'],_0x5f0433=()=>{const _0x2f35e3=_0x2e3a4b,_0x16a748=document[_0x2f35e3(0xef)+'t'],_0x393da8=_0x16a748&&Array[_0x2f35e3(0xeb)](_0x3c76df)[_0x2f35e3(0xf8)](_0x16a748);document[_0x2f35e3(0x111)][_0x2f35e3(0xf1)][_0x2f35e3(0x126)]('payment-keyb'+_0x2f35e3(0x11b),_0x393da8);};_0x3c76df[_0x2e3a4b(0xf4)](_0x25ccb=>{const _0x18d1d8=_0x2e3a4b;_0x25ccb[_0x18d1d8(0xfc)+'ener'](_0x18d1d8(0x115),()=>{const _0x247b92=_0x18d1d8;document['body']['classList']['add']('payment-keyb'+_0x247b92(0x11b)),setTimeout(_0x5f0433,0x50),setTimeout(_0x5f0433,0xdc);}),_0x25ccb['addEventList'+'ener']('blur',()=>{setTimeout(()=>{const _0xf92da2=_0x3e02;document['body'][_0xf92da2(0xf1)][_0xf92da2(0x105)](_0xf92da2(0x10d)+'oard-open'),_0x5f0433();},0xa0);});});_0x5bca66&&(_0x5bca66[_0x2e3a4b(0xfc)+_0x2e3a4b(0xfa)](_0x2e3a4b(0xe5),_0x5f0433),_0x5bca66['addEventList'+'ener']('scroll',_0x5f0433));window[_0x2e3a4b(0xfc)+_0x2e3a4b(0xfa)](_0x2e3a4b(0xe5),_0x5f0433);let _0x2990f3=[];try{_0x2990f3=JSON[_0x2e3a4b(0xfd)](localStorage[_0x2e3a4b(0xf7)](_0x2e3a4b(0x107))||'[]')||[];}catch(_0x43ffd1){}if(_0x2990f3['length']>0x0&&_0x418862){if(_0x249fed)_0x249fed['style']['display']='none';const _0x3fa3b0=_0x2990f3['reduce']((_0x439d53,_0x1fb8be)=>_0x439d53+(_0x1fb8be['subtotal']||0x0),0x0),_0x411278=_0x6e03=>'Rp\x20'+_0x6e03[_0x2e3a4b(0xe7)+'ng'](_0x2e3a4b(0xf9)),_0x2ef6d4=document[_0x2e3a4b(0x104)+'Id']('paySubtotal'),_0x21296a=document['getElementBy'+'Id']('payTotal');if(_0x2ef6d4)_0x2ef6d4['textContent']=_0x411278(_0x3fa3b0);if(_0x21296a)_0x21296a['textContent']=_0x411278(_0x3fa3b0);const _0x448660=[0x48,0x3a,0x50,0x40,0x4c],_0x5ac818=[0x30,0x26,0x37,0x2a,0x32],_0x4ef913=[0x48,0x50,0x44,0x4c,0x40];_0x418862['innerHTML']=_0x2990f3[_0x2e3a4b(0x11c)]((_0x2502c5,_0x34b8fa)=>_0x2e3a4b(0xe8)+'div\x20class=\x22c'+'art-item-ske'+_0x2e3a4b(0x109)+_0x2e3a4b(0x110)+'\x20class=\x22cis-'+'left\x22>\x0a\x20\x20\x20\x20\x20'+'\x20\x20\x20\x20\x20\x20\x20\x20\x20<di'+'v\x20class=\x22ske'+_0x2e3a4b(0x106)+_0x2e3a4b(0xff)+'idth:'+_0x448660[_0x34b8fa%_0x448660[_0x2e3a4b(0x103)]]+(_0x2e3a4b(0xe9)+'\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+_0x2e3a4b(0x121)+_0x2e3a4b(0xed)+_0x2e3a4b(0xe6)+_0x2e3a4b(0xf3))+_0x5ac818[_0x34b8fa%_0x5ac818['length']]+(_0x2e3a4b(0xe9)+_0x2e3a4b(0x117)+'div>\x0a\x20\x20\x20\x20\x20\x20\x20'+_0x2e3a4b(0x123)+_0x2e3a4b(0x10c)+'ht\x22>\x0a\x20\x20\x20\x20\x20\x20\x20'+_0x2e3a4b(0x10a)+'class=\x22cis-q'+'ty-wrap\x22>\x0a\x20\x20'+'\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+'\x20\x20<div\x20class'+'=\x22skeleton\x20c'+'is-qty-btn\x22>'+'</div>\x0a\x20\x20\x20\x20\x20'+'\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<'+'div\x20class=\x22s'+'keleton\x20cis-'+_0x2e3a4b(0xf5)+_0x2e3a4b(0x120)+'\x20\x20\x20\x20\x20\x20\x20\x20<div'+_0x2e3a4b(0x118)+_0x2e3a4b(0x119)+_0x2e3a4b(0x10f)+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+'\x20\x20\x20</div>\x0a\x20\x20'+'\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+'<div\x20class=\x22'+_0x2e3a4b(0xed)+'-subtotal\x22\x20s'+'tyle=\x22width:')+_0x4ef913[_0x34b8fa%_0x4ef913['length']]+('px\x22></div>\x0a\x20'+'\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+'\x20<div\x20class='+_0x2e3a4b(0xee)+_0x2e3a4b(0x113)+_0x2e3a4b(0x102)+'\x20\x20</div>\x0a\x20\x20\x20'+'\x20\x20\x20\x20\x20\x20\x20</div'+'>'))['join']('');}}));</script> <script src="../../assets/js/transaksi.js"></script> <script src="../../assets/js/dashboard-onboarding.js"></script> <script src="../../assets/js/page-transition.js"></script> </body> </html> 

@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /supabase/
+Disallow: /scripts/
+Disallow: /dist/
+
+Sitemap: https://uangmasuk.mutatit.com/sitemap.xml

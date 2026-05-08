@@ -1,0 +1,475 @@
+<!DOCTYPE html> <html lang="id"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width,initial-scale=1"> <title>Pembayaran QRIS - Uang Masuk</title> <meta name="description" content="Halaman pembayaran langganan Uang Masuk via QRIS."> <meta name="robots" content="noindex, nofollow"> <link rel="canonical" href="https://uangmasuk.mutatit.com/#harga"> <link rel="icon" type="image/svg+xml" href="../../assets/images/logo.svg"> <link rel="preconnect" href="https://fonts.googleapis.com"> <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"> <style> *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --dark: #1C1C1C;
+      --white: #FFFFFF;
+      --off-white: #F7F5F0;
+      --yellow: #FFD600;
+      --green: #16A34A;
+      --red: #DC2626;
+      --muted: rgba(28, 28, 28, 0.64);
+      --line: rgba(28, 28, 28, 0.12);
+      --border: 2.5px solid var(--dark);
+      --shadow: 5px 5px 0 var(--dark);
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--off-white);
+      color: var(--dark);
+      line-height: 1.6;
+    }
+
+    .page-close-btn {
+      position: fixed;
+      top: 18px;
+      right: 18px;
+      width: 38px;
+      height: 38px;
+      z-index: 50;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--white);
+      color: var(--dark);
+      border: 2.5px solid var(--dark);
+      box-shadow: 3px 3px 0 var(--dark);
+      cursor: pointer;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 900;
+      line-height: 1;
+      transition: transform 0.12s, box-shadow 0.12s;
+    }
+
+    .page-close-btn:hover {
+      transform: translate(-1px, -1px);
+      box-shadow: 4px 4px 0 var(--dark);
+    }
+
+    .page-close-btn:active {
+      transform: translate(1px, 1px);
+      box-shadow: 1px 1px 0 var(--dark);
+    }
+
+    .page-hero {
+      background: var(--dark);
+      color: var(--white);
+      padding: 44px 40px;
+      border-bottom: var(--border);
+    }
+
+    .hero-inner {
+      max-width: 980px;
+      margin: 0 auto;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--yellow);
+      color: var(--dark);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      padding: 5px 14px;
+      font-size: 0.72rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 18px;
+    }
+
+    .page-hero h1 {
+      font-size: clamp(1.8rem, 3vw, 2.6rem);
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 12px;
+      letter-spacing: 0;
+    }
+
+    .page-hero .meta {
+      max-width: 640px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.64);
+    }
+
+    .layout {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 44px 40px 76px;
+    }
+
+    .content {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .section {
+      padding: 34px 0;
+      border-bottom: 1.5px solid var(--line);
+    }
+
+    .section:first-child {
+      padding-top: 0;
+    }
+
+    .section:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 18px;
+      margin-bottom: 20px;
+    }
+
+    .section-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      background: var(--dark);
+      color: var(--white);
+      font-size: 0.85rem;
+      font-weight: 900;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .section-title {
+      font-size: 1.15rem;
+      font-weight: 900;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    .section-body {
+      padding-left: 54px;
+    }
+
+    .summary-card {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 18px;
+      align-items: end;
+      background: var(--yellow);
+      border: var(--border);
+      padding: 22px 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .summary-label,
+    .detail-label {
+      color: rgba(28, 28, 28, 0.5);
+      font-size: 0.74rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .summary-title {
+      font-size: clamp(1.35rem, 2.8vw, 1.9rem);
+      font-weight: 900;
+      line-height: 1.15;
+      margin-top: 4px;
+    }
+
+    .summary-price {
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      font-weight: 900;
+      line-height: 1;
+      white-space: nowrap;
+      text-align: right;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 5px;
+    }
+
+    .summary-old-price,
+    .detail-old-price {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 900;
+      line-height: 1;
+      color: rgba(28, 28, 28, 0.5);
+      text-decoration: line-through;
+      text-decoration-thickness: 2px;
+      letter-spacing: 0;
+    }
+
+    .payment-grid {
+      display: grid;
+      grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+      gap: 24px;
+      align-items: stretch;
+    }
+
+    .qris-card,
+    .detail-card {
+      background: var(--white);
+      border: var(--border);
+    }
+
+    .qris-card {
+      display: flex;
+      flex-direction: column;
+      padding: 20px 20px 22px;
+      text-align: center;
+    }
+
+    .qris-title {
+      font-size: 0.84rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 16px;
+    }
+
+    .qris-frame {
+      width: 100%;
+      max-width: 250px;
+      aspect-ratio: 1 / 1;
+      margin: 0 auto 14px;
+      border: 2px solid var(--dark);
+      background: var(--white);
+      padding: 10px;
+    }
+
+    .qris-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .plain-button,
+    .whatsapp-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      width: 100%;
+      border: var(--border);
+      font-family: inherit;
+      font-size: 0.92rem;
+      font-weight: 900;
+      text-decoration: none;
+      padding: 13px 16px;
+      cursor: pointer;
+    }
+
+    .plain-button {
+      background: var(--white);
+      color: var(--dark);
+      min-height: 54px;
+      margin: 2px 0 14px;
+    }
+
+    .plain-button:hover,
+    .whatsapp-button:hover {
+      transform: translate(-1px, -1px);
+      box-shadow: 3px 3px 0 var(--dark);
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 0.86rem;
+      font-weight: 600;
+      line-height: 1.7;
+    }
+
+    .detail-card {
+      overflow: hidden;
+      display: grid;
+      grid-template-rows: repeat(6, minmax(54px, 1fr));
+    }
+
+    .detail-row {
+      display: grid;
+      grid-template-columns: 145px 1fr;
+      gap: 18px;
+      padding: 13px 16px;
+      border-bottom: 1.5px solid var(--line);
+      align-items: center;
+      min-height: 54px;
+    }
+
+    .detail-row:last-child {
+      border-bottom: 0;
+    }
+
+    .detail-value {
+      font-size: 0.95rem;
+      font-weight: 850;
+      overflow-wrap: anywhere;
+      line-height: 1.45;
+    }
+
+    .detail-value.price {
+      color: #15803D;
+      font-size: 1.15rem;
+      font-weight: 900;
+    }
+
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 36px 1fr;
+      gap: 14px;
+      align-items: flex-start;
+    }
+
+    .step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      background: var(--dark);
+      color: var(--white);
+      font-size: 0.82rem;
+      font-weight: 900;
+      flex-shrink: 0;
+    }
+
+    .step p {
+      color: rgba(28, 28, 28, 0.74);
+      font-size: 0.94rem;
+      font-weight: 600;
+      line-height: 1.7;
+    }
+
+    .highlight-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      margin-top: 20px;
+      padding: 12px 16px;
+      border: 2.5px solid var(--dark);
+      font-size: clamp(0.82rem, 1.6vw, 0.9rem);
+      font-weight: 800;
+      line-height: 1.45;
+    }
+
+    .highlight-box svg {
+      width: 17px;
+      height: 17px;
+      flex: 0 0 17px;
+    }
+
+    .highlight-box span {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .highlight-box.warning {
+      background: #FEF3C7;
+      color: rgba(28, 28, 28, 0.82);
+    }
+
+    .highlight-box.success {
+      background: #F0FDF4;
+      color: #15803D;
+      border-color: #15803D;
+    }
+
+    .whatsapp-button {
+      margin-top: 18px;
+      background: var(--green);
+      color: var(--white);
+      border-color: var(--dark);
+    }
+
+    .page-footer {
+      background: var(--dark);
+      padding: 30px 24px;
+    }
+
+    .page-footer p {
+      max-width: 1200px;
+      margin: 0 auto;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    [data-loading="true"] .layout {
+      opacity: 0.45;
+      pointer-events: none;
+    }
+
+    @media (max-width: 768px) {
+      .page-hero {
+        padding: 32px 20px;
+      }
+
+      .layout {
+        padding: 32px 20px 60px;
+      }
+
+      .section-body {
+        padding-left: 0;
+      }
+
+      .summary-card {
+        grid-template-columns: 1fr;
+      }
+
+      .summary-price {
+        text-align: left;
+      }
+
+      .payment-grid {
+        grid-template-columns: 1fr;
+        align-items: start;
+      }
+
+      .detail-card {
+        display: block;
+      }
+
+      .detail-row {
+        grid-template-columns: 1fr;
+        gap: 4px;
+      }
+
+      .highlight-box {
+        padding: 11px 13px;
+        gap: 10px;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .highlight-box {
+        align-items: flex-start;
+        padding: 10px 12px;
+        line-height: 1.5;
+      }
+
+      .highlight-box svg {
+        margin-top: 2px;
+      }
+    } </style> </head> <body data-loading="true"> <button type="button" class="page-close-btn" aria-label="Tutup halaman pembayaran" onclick="window.location.href='../'">×</button> <section class="page-hero"> <div class="hero-inner"> <div class="hero-badge">Pembayaran Langganan</div> <h1>Pembayaran QRIS</h1> <p class="meta">Scan QRIS, bayar sesuai nominal paket, lalu kirim bukti pembayaran melalui WhatsApp untuk proses aktivasi.</p> </div> </section> <main class="layout"> <article class="content"> <section class="section" aria-label="Ringkasan paket"> <div class="section-header"> <span class="section-num">1</span> <h2 class="section-title">Ringkasan Paket</h2> </div> <div class="section-body"> <div class="summary-card"> <div> <div class="summary-label">Paket Dipilih</div> <div class="summary-title" id="planName">Paket Bulanan</div> </div> <div class="summary-price" id="planPrice"> <span class="summary-old-price">Rp 60.000</span> <span>Rp 25.000</span> </div> </div> </div> </section> <section class="section" aria-label="Kode QRIS dan detail pembayaran"> <div class="section-header"> <span class="section-num">2</span> <h2 class="section-title">Scan QRIS dan Detail Pembayaran</h2> </div> <div class="section-body"> <div class="payment-grid"> <section class="qris-card" aria-label="Kode QRIS"> <h3 class="qris-title">QRIS Uang Masuk</h3> <div class="qris-frame"> <img src="../../assets/images/qris.png" alt="QRIS pembayaran langganan Uang Masuk"> </div> <a class="plain-button" href="../../assets/images/qris.png" download="qris-uang-masuk.png" rel="noopener"> <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"> <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/> <path d="M7 10l5 5 5-5"/> <path d="M12 15V3"/> </svg> Download QRIS </a> <p class="hint">Gunakan e-wallet atau mobile banking yang mendukung pembayaran QRIS.</p> </section> <section class="detail-card" aria-label="Detail pembayaran"> <div class="detail-row"> <div class="detail-label">Paket</div> <div class="detail-value" id="detailPlan">Paket Bulanan</div> </div> <div class="detail-row"> <div class="detail-label">Nominal</div> <div class="detail-value price" id="detailAmount"> <span class="detail-old-price">Rp 60.000</span> <span>Rp 25.000</span> </div> </div> <div class="detail-row"> <div class="detail-label">Metode</div> <div class="detail-value">QRIS</div> </div> <div class="detail-row"> <div class="detail-label">Email Akun</div> <div class="detail-value" id="detailEmail">-</div> </div> <div class="detail-row"> <div class="detail-label">Referensi</div> <div class="detail-value" id="detailReference">-</div> </div> <div class="detail-row"> <div class="detail-label">Status</div> <div class="detail-value">Menunggu bukti pembayaran</div> </div> </section> </div> </div> </section> <section class="section" aria-label="Langkah konfirmasi pembayaran"> <div class="section-header"> <span class="section-num">3</span> <h2 class="section-title">Konfirmasi Pembayaran</h2> </div> <div class="section-body"> <div class="steps"> <div class="step"> <span class="step-num">1</span> <p>Scan QRIS dan bayar sesuai nominal paket yang dipilih.</p> </div> <div class="step"> <span class="step-num">2</span> <p>Simpan screenshot atau bukti transaksi QRIS.</p> </div> <div class="step"> <span class="step-num">3</span> <p>Kirim bukti melalui WhatsApp agar admin bisa memverifikasi dan mengaktifkan paket.</p> </div> </div> <div class="highlight-box warning"> <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"> <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/> <line x1="12" y1="9" x2="12" y2="13"/> <line x1="12" y1="17" x2="12.01" y2="17"/> </svg> <span>Pastikan nominal pembayaran sama dengan harga paket yang dipilih.</span> </div> <a class="whatsapp-button" id="whatsappLink" href="https://wa.me/628977279290" target="_blank" rel="noopener"> <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"> <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/> </svg> Kirim Bukti via WhatsApp </a> </div> </section> </article> </main> <footer class="page-footer"> <p>© 2026 Uang Masuk by Mutatit. Seluruh hak dilindungi.</p> </footer> <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script> <script src="../../assets/js/supabase.js"></script> <script src="../../assets/js/page-transition.js"></script> <script>const _0x5dc46b=_0x2dd6;(function(_0x33b16a,_0x594e3e){const _0x560305=_0x2dd6,_0x2f331b=_0x33b16a();while(!![]){try{const _0x3e2998=-parseInt(_0x560305(0xce))/0x1*(-parseInt(_0x560305(0xcc))/0x2)+-parseInt(_0x560305(0xdf))/0x3+-parseInt(_0x560305(0xe9))/0x4*(parseInt(_0x560305(0xca))/0x5)+-parseInt(_0x560305(0xe4))/0x6+parseInt(_0x560305(0xe5))/0x7*(-parseInt(_0x560305(0xcb))/0x8)+parseInt(_0x560305(0xeb))/0x9*(parseInt(_0x560305(0xee))/0xa)+-parseInt(_0x560305(0xde))/0xb*(-parseInt(_0x560305(0xd2))/0xc);if(_0x3e2998===_0x594e3e)break;else _0x2f331b['push'](_0x2f331b['shift']());}catch(_0x2a479f){_0x2f331b['push'](_0x2f331b['shift']());}}}(_0x424a,0x736a1));const WA_ADMIN_NUMBER='628977279290',planConfig={'monthly':{'name':'Paket\x20Bulana'+'n','price':'Rp\x2025.000','oldPrice':'Rp\x2060.000','amount':0x61a8},'lifetime':{'name':_0x5dc46b(0xd7)+'\x20Hidup','price':'Rp\x20300.000','oldPrice':_0x5dc46b(0xda),'amount':0x493e0}};let currentUser=null;function getSelectedPlan(){const _0x31659c=_0x5dc46b,_0x258c6e=new URLSearchParams(window['location'][_0x31659c(0xe6)]),_0x3b0162=_0x258c6e['get']('plan');if(planConfig[_0x3b0162])return _0x3b0162;try{const _0x26220d=JSON[_0x31659c(0xdd)](sessionStorage['getItem'](_0x31659c(0xc0)+'ent')||'null');if(planConfig[_0x26220d?.['plan']])return _0x26220d['plan'];}catch(_0x12001e){return'monthly';}return'monthly';}function compactUserId(_0x3070eb){const _0x17767b=_0x5dc46b;return String(_0x3070eb||'USER')['replace'](/[^a-zA-Z0-9]/g,'')['slice'](0x0,0x8)['toUpperCase']()||_0x17767b(0xcd);}function buildPaymentReference(_0x4d41ee){const _0x194c93=_0x5dc46b,_0x298c5c=_0x4d41ee==='lifetime'?'LIFE':'MONTH',_0x588339=Date[_0x194c93(0xc7)]()[_0x194c93(0xd6)](0x24)['toUpperCase']();return _0x194c93(0xbe)+_0x298c5c+'-'+_0x588339+'-'+compactUserId(currentUser?.['id']||currentUser?.[_0x194c93(0xc9)]);}function getPaymentData(_0x5370c1){const _0x587142=_0x5dc46b,_0x2dd76a=planConfig[_0x5370c1]||planConfig[_0x587142(0xc1)];let _0x5605d7=null;try{_0x5605d7=JSON['parse'](sessionStorage['getItem']('pending_paym'+'ent')||'null');}catch(_0x2c8fd9){_0x5605d7=null;}const _0x3aac1b=_0x5605d7?.['plan']===_0x5370c1&&_0x5605d7?.[_0x587142(0xec)]===_0x587142(0xd4),_0x246b75=_0x3aac1b?_0x5605d7:{'plan':_0x5370c1,'method':_0x587142(0xd4),'amount':_0x2dd76a['amount'],'price':_0x2dd76a['price'],'oldPrice':_0x2dd76a[_0x587142(0xcf)],'reference':buildPaymentReference(_0x5370c1),'user_id':currentUser?.['id'],'email':currentUser?.['email']||'-','timestamp':Date['now']()};return _0x246b75['user_id']=currentUser?.['id']||_0x246b75['user_id']||'-',_0x246b75['email']=currentUser?.[_0x587142(0xc9)]||_0x246b75['email']||'-',_0x246b75[_0x587142(0xef)]=_0x2dd76a['price'],_0x246b75['oldPrice']=_0x2dd76a[_0x587142(0xcf)],_0x246b75[_0x587142(0xc3)]=_0x2dd76a[_0x587142(0xc3)],_0x246b75['reference']=_0x246b75['reference']||buildPaymentReference(_0x5370c1),sessionStorage['setItem'](_0x587142(0xc0)+'ent',JSON['stringify'](_0x246b75)),_0x246b75;}function _0x2dd6(_0x2aa20d,_0x13d75d){_0x2aa20d=_0x2aa20d-0xbc;const _0x424aab=_0x424a();let _0x2dd68e=_0x424aab[_0x2aa20d];if(_0x2dd6['xVPlpQ']===undefined){var _0x16e2a6=function(_0x335eb6){const _0x467ef6='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let _0x258c6e='',_0x3b0162='';for(let _0x26220d=0x0,_0x12001e,_0x3070eb,_0x4d41ee=0x0;_0x3070eb=_0x335eb6['charAt'](_0x4d41ee++);~_0x3070eb&&(_0x12001e=_0x26220d%0x4?_0x12001e*0x40+_0x3070eb:_0x3070eb,_0x26220d++%0x4)?_0x258c6e+=String['fromCharCode'](0xff&_0x12001e>>(-0x2*_0x26220d&0x6)):0x0){_0x3070eb=_0x467ef6['indexOf'](_0x3070eb);}for(let _0x298c5c=0x0,_0x588339=_0x258c6e['length'];_0x298c5c<_0x588339;_0x298c5c++){_0x3b0162+='%'+('00'+_0x258c6e['charCodeAt'](_0x298c5c)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(_0x3b0162);};_0x2dd6['pTBREm']=_0x16e2a6,_0x2dd6['kAWopV']={},_0x2dd6['xVPlpQ']=!![];}const _0x59c467=_0x424aab[0x0],_0x4d6806=_0x2aa20d+_0x59c467,_0x4ee943=_0x2dd6['kAWopV'][_0x4d6806];return!_0x4ee943?(_0x2dd68e=_0x2dd6['pTBREm'](_0x2dd68e),_0x2dd6['kAWopV'][_0x4d6806]=_0x2dd68e):_0x2dd68e=_0x4ee943,_0x2dd68e;}function buildWhatsappMessage(_0x5ebb8f,_0x2fa5d0){const _0x491a80=_0x5dc46b;return'Halo\x20Admin\x20U'+'ang\x20Masuk.\x0a\x0a'+('Saya\x20sudah\x20m'+'elakukan\x20pem'+'bayaran\x20lang'+_0x491a80(0xe0)+'RIS*.\x0a\x0a')+(_0x491a80(0xe1)+'yaran:\x0a')+('-\x20Paket:\x20*'+_0x5ebb8f['name']+'*\x0a')+('-\x20Nominal:\x20*'+_0x5ebb8f[_0x491a80(0xef)]+'*\x0a')+(_0x491a80(0xd1)+'RIS*\x0a')+(_0x491a80(0xc4)+_0x491a80(0xe8)+(_0x2fa5d0['email']||'-')+'*\x0a')+(_0x491a80(0xbc)+(_0x2fa5d0[_0x491a80(0xd3)]||'-')+'*\x0a')+('-\x20Kode\x20refer'+'ensi:\x20*'+_0x2fa5d0['reference']+'*\x0a\x0a')+('Saya\x20lampirk'+_0x491a80(0xc8)+'bayaran\x20QRIS'+'\x20pada\x20chat\x20i'+'ni.\x20Mohon\x20di'+_0x491a80(0xea)+_0x491a80(0xe3)+'ivasi\x20paketn'+'ya.\x20Terima\x20k'+'asih.');}function setText(_0x2acb40,_0x1e2627){const _0x44fc30=_0x5dc46b,_0x2abdc2=document['getElementBy'+'Id'](_0x2acb40);if(_0x2abdc2)_0x2abdc2[_0x44fc30(0xe7)]=_0x1e2627;}function _0x424a(){const _0x2485df=['zMfSC2u','Dg9tDhjPBMC','ugfRzxqGu2v1BxvY','CgXHBLbYAwnL','AhjLzG','uNaGntaWlJaWma','zgv0ywLSuMvMzxjL','zgf0ys1SB2fKAw5N','CgfYC2u','mtqZDLrkDvHo','mJaYndK1nwnYrwHOra','z2fUyw4GDMLHicPr','rgv0ywLSihbLBwjH','ywrLza','A2fZAsbKyw4GywT0','mJqXmZmZogzyB1nQDG','ntzuvvLSrgi','C2vHCMnO','Dgv4DenVBNrLBNq','oIaQ','mJu2odHwCe52vMq','yMfUDhuGDMvYAwzP','mtqYndaYnxz3ruH6uG','Bwv0Ag9K','zgv0ywLSrw1HAwW','mtbevgDwuhy','ChjPy2u','yxv0Aa','lsbvC2vYieLeoIaQ','DxnLCG','vu0T','C2v0qxr0CMLIDxrL','CgvUzgLUz19WyxLT','Bw9UDgHSEq','Bg9JyxrPB24','yw1VDw50','lsbfBwfPBcbHA3vU','phnWyw4Gy2XHC3m9','BMfTzq','BM93','yw4GyNvRDgKGCgvT','zw1HAwW','mtm1CvLPEhb3','nta5mZyWCfjNEKv5','mNnet1bwyW','vvnfuG','mtm4mtG5vevWu3b5','B2XKuhjPy2u','z2v0rwXLBwvUDej5','lsbnzxrVzgu6icPr','mtC4nZm0mevWCxjXDq','DxnLCL9Pza','CxjPCW'];_0x424a=function(){return _0x2485df;};return _0x424a();}function setPriceHtml(_0x2146d1,_0x42eebd,_0x227c42){const _0x1c661f=_0x5dc46b,_0x2614fe=document[_0x1c661f(0xd0)+'Id'](_0x2146d1);if(!_0x2614fe)return;_0x2614fe['innerHTML']=_0x1c661f(0xc5)+'\x22'+_0x227c42+'\x22>'+_0x42eebd['oldPrice']+('</span><span'+'>')+_0x42eebd['price']+'</span>';}function renderPayment(_0x9e7dc3,_0x139b9f){const _0x1ff214=_0x5dc46b,_0x43f181=planConfig[_0x9e7dc3]||planConfig[_0x1ff214(0xc1)];setText('planName',_0x43f181[_0x1ff214(0xc6)]),setPriceHtml(_0x1ff214(0xd8),_0x43f181,'summary-old-'+'price'),setText('detailPlan',_0x43f181['name']),setPriceHtml('detailAmount',_0x43f181,'detail-old-p'+'rice'),setText(_0x1ff214(0xed),_0x139b9f['email']||'-'),setText(_0x1ff214(0xdb)+'nce',_0x139b9f['reference']||'-');const _0x3c17e0=document[_0x1ff214(0xd0)+'Id']('whatsappLink');_0x3c17e0&&(_0x3c17e0['href']='https://wa.m'+'e/'+WA_ADMIN_NUMBER+'?text='+encodeURIComponent(buildWhatsappMessage(_0x43f181,_0x139b9f)));}window['addEventList'+'ener']('DOMContentLo'+_0x5dc46b(0xe2),async()=>{const _0x5b7712=_0x5dc46b,{data:{session:_0x4e87fb}}=await db[_0x5b7712(0xf0)]['getSession']();if(!_0x4e87fb?.['user']){window[_0x5b7712(0xc2)][_0x5b7712(0xd9)]='../../login/';return;}currentUser=_0x4e87fb[_0x5b7712(0xbd)];const _0x343669=getSelectedPlan(),_0x357fa5=getPaymentData(_0x343669);renderPayment(_0x343669,_0x357fa5),document['body'][_0x5b7712(0xbf)](_0x5b7712(0xdc),_0x5b7712(0xd5));});</script> </body> </html> 
