@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
-module.exports = {
-  content: ['./App.{js,jsx,ts,tsx}', './src/**/*.{js,jsx,ts,tsx}'],
+export default {
+  content: ['./index.html', './src/**/*.{js,jsx}'],
   theme: {
     extend: {
       colors: {
@@ -8,8 +8,16 @@ module.exports = {
         pink: '#ff5ca8', cyan: '#00e5ff', purple: '#8b5cf6', orange: '#ff9f1c',
         green: '#28e98c', red: '#ff4d4d', blue: '#4da3ff', muted: '#5e5147'
       },
-      fontFamily: { pixel: ['System'], sans: ['System'] }
+      boxShadow: {
+        brutal: '7px 7px 0 #151515',
+        brutalSm: '4px 4px 0 #151515',
+        brutalLg: '12px 12px 0 #151515'
+      },
+      fontFamily: {
+        pixel: ['Pixelify Sans', 'Space Grotesk', 'system-ui', 'sans-serif'],
+        sans: ['Space Grotesk', 'system-ui', 'sans-serif']
+      }
     }
   },
   plugins: []
-};
+}
